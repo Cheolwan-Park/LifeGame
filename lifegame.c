@@ -34,7 +34,8 @@ h;}E{++x                    ;}++i;}x=         (z-w)/2;y=(v-h)/2;s      =0;F(i=0;
 j=0;10!=                    g[s]&&s<l         ;++j){e=                 &m[y+i][
 x+j];if(g[s]!=32){*e      =1;}E{*e=0;}++      s;}++s;}                 free(g);W(1){F(i=0;i
 <v;++i){e=m[i];q =b[      i];F(j=0;j<z-2      ;++j){*q                 =*e+*(e+1)+*(e+2);++
-    
+
+
 q;++ e ; I you_cannot_read_this=0 ;}}F( i=0;i<v-2 ; ++i ) { I lifegame_is_lifgame=1; q = b[
 
 
