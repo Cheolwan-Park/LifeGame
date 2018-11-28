@@ -1,83 +1,80 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(_WIN64)
 #define c "cls"
 #else
 #define c "clear"
 #endif
 
-const char *game =
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                   x                    "
-    "                     x                  "
-    "                  xx  xxx               "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        "
-    "                                        ";
+const int BOARD_WIDTH = 400;
+const int BOARD_HEIGHT = 300;
+const int SIMULATION_INTERVAL = 200000;
+#define mw BOARD_WIDTH
+#define mh BOARD_HEIGHT
+
 
 int main(int argc, char *argv[]){
-  char *map = 0, *imap, *buf=0, *ibuf;
-  int w=0, h=0, i=0, j=0, s=0, mw=0, mh=0, x=0, y=0;
+  int w=0, h=1, i=0, j=0, s=0, x=0, y=0;
+  long l = 0;
+  char map[mh][mw]={0}, buf[mh][mw]={0}, *ibuf, *imap, *g=nullptr;
+  FILE *f = 0;
 
-  // dummy data
-  w = 40;
-  h = 20;
-  mw = 300;
-  mh = 300;
 
-  s = mw*mh;
-  map = (char*)malloc(s);
-  buf = (char*)malloc(s);
-  memset(map, 0, s);
-  memset(buf, 0, s);
+  if(2 != argc) {
+    printf("usage : LifeGame.exe <game filename>\n");
+    return -1;
+  }
+  f = fopen(argv[1], "rb");
+  if(!f) {
+    printf("%s not exist\n", argv[1]);
+    return -1;
+  }
+  fseek(f, 0, SEEK_END);
+  l = ftell(f);
+  rewind(f);
+  g = (char*)malloc(l);
+  fread(g, 1, l, f);
+  fclose(f);
+
+  while(i<l) {
+    if(g[i] == 10) {
+      w = w > x ? w : x;
+      x=0;
+      ++h;
+    } else {
+      ++x;
+    }
+    ++i;
+  }
+  printf("\n");
 
   x = (mw-w)/2;
   y = (mh-h)/2;
 
-  for(i=0; i<h; ++i) {
-    for(j=0; j<w; ++j) {
-      imap = map+(y+i)*mw+x+j;
-      if(game[i*w+j] != 32) {
+  s = 0;
+  for(i=0; s<l; ++i) {
+    for(j=0; 10 != g[s] && s<l; ++j) {
+      imap = &map[y+i][x+j];
+      if(g[s] != 32) {
         *imap = 1;
       }
       else {
         *imap = 0;
       }
+      ++s;
     }
+    ++s;
   }
+  free(g);
 
   int loop = 1;
   while(loop) {
     // counting
     for(i=0; i<mh; ++i) {
-      imap = map+i*mw;
-      ibuf = buf+i*mw;
+      imap = map[i];
+      ibuf = buf[i];
       for(j=0; j<mw-2; ++j) {
         *ibuf = *imap + *(imap+1) + *(imap+2);
         ++ibuf;
@@ -86,7 +83,7 @@ int main(int argc, char *argv[]){
     }
 
     for(i=0; i<mh-2; ++i) {
-      ibuf = buf+i*mw;
+      ibuf = buf[i];
       for(j=0; j<mw; ++j) {
         *ibuf = *ibuf + *(ibuf+mw) + *(ibuf+2*mw);
         ++ibuf;
@@ -96,8 +93,8 @@ int main(int argc, char *argv[]){
     // updating
     for(i=1; i<mh-1; ++i) {
       for(j=1; j<mw-1; ++j) {
-        s = buf[(i-1)*mw+j-1];
-        imap = map+i*mw+j;
+        s = buf[i-1][j-1];
+        imap = &map[i][j];
         if(*imap) {
           --s;
           *imap = 0;
@@ -112,11 +109,11 @@ int main(int argc, char *argv[]){
       }
     }
 
-//     print
+    // print
     system(c);
     for(i=1; i<mh-1; ++i) {
       for(j=1; j<mw-1; ++j) {
-        if(map[i*mw+j]) {
+        if(map[i][j]) {
           printf("x ");
         } else {
           printf("  ");
@@ -125,6 +122,6 @@ int main(int argc, char *argv[]){
       printf("\n");
     }
     printf("\n");
-    usleep(200000);
+    usleep(SIMULATION_INTERVAL);
   }
 }
